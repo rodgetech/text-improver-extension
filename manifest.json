@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GPT Text Improver",
   "version": "1.0",
-  "description": "Improve text grammatically with a right-click option.",
+  "description": "Improve text grammatically with a right-click option - powered by GPT.",
   "permissions": ["contextMenus", "activeTab", "scripting"],
   "host_permissions": ["https://s4ofd6.buildship.run/*"],
   "background": {

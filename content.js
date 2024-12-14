@@ -34,13 +34,10 @@ function showImprovedTextPopover(improvedText) {
   tooltip.style.borderRadius = "5px";
 
   tooltip.innerHTML = `
-      <p style="margin: 0; font-weight: bold;">Improved Text:</p>
-      <p style="word-wrap: break-word; margin: 10px 0;">${improvedText}</p>
-      <button id="copy-text" style="margin-right: 10px; padding: 5px 10px; border: none; background: #4CAF50; color: white; border-radius: 3px; cursor: pointer;">
+      <p style="margin: 0; font-weight: bold; font-size: 14px;">Improved Text:</p>
+      <p style="word-wrap: break-word; margin: 10px 0; font-size: 14px;">${improvedText}</p>
+      <button id="copy-text" style="margin-right: 10px; padding: 5px 10px; border: none; background: #4CAF50; color: white; border-radius: 3px; cursor: pointer; font-size: 14px;">
         Copy to Clipboard
-      </button>
-      <button id="cancel-change" style="padding: 5px 10px; border: none; background: #f44336; color: white; border-radius: 3px; cursor: pointer;">
-        Cancel
       </button>
     `;
 
@@ -59,11 +56,16 @@ function showImprovedTextPopover(improvedText) {
     }
   };
 
-  // Handle Cancel button
-  document.getElementById("cancel-change").onclick = () => {
-    restoreSelection();
-    document.body.removeChild(tooltip);
-  };
+  // Add a click listener to detect clicks outside the tooltip
+  function outsideClickListener(event) {
+    if (!tooltip.contains(event.target)) {
+      document.body.removeChild(tooltip);
+      document.removeEventListener("click", outsideClickListener);
+      restoreSelection();
+    }
+  }
+
+  document.addEventListener("click", outsideClickListener);
 }
 
 // Function to restore the preserved selection
