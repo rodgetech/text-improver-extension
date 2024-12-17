@@ -17,29 +17,56 @@ function showImprovedTextPopover(improvedText) {
   const tooltip = document.createElement("div");
   tooltip.id = "text-improver-tooltip";
 
-  // Style the tooltip
+  // Get the selection's bounding rectangle
   const range = preservedRange;
+  const rect = range.getBoundingClientRect();
+
+  // Tooltip dimensions
+  const tooltipWidth = 300; // Tooltip width
+  const tooltipHeight = 200; // Estimated height
+  const padding = 10;
+
+  // Default position: below the selection
+  let top = rect.bottom + padding;
+  let left = rect.left;
+
+  // Adjust vertically if offscreen
+  if (top + tooltipHeight > window.innerHeight) {
+    top = rect.top - tooltipHeight - padding; // Move above the selection
+  }
+
+  // Adjust horizontally if offscreen
+  if (left + tooltipWidth > window.innerWidth) {
+    left = window.innerWidth - tooltipWidth - padding;
+  }
+  if (left < padding) {
+    left = padding; // Prevent overflowing left
+  }
+
+  // Apply tooltip styles
   tooltip.style.position = "fixed";
-  tooltip.style.top = `${
-    range ? range.getBoundingClientRect().bottom + 10 : 100
-  }px`;
-  tooltip.style.left = `${range ? range.getBoundingClientRect().left : 100}px`;
+  tooltip.style.top = `${top}px`;
+  tooltip.style.left = `${left}px`;
   tooltip.style.backgroundColor = "white";
   tooltip.style.border = "1px solid black";
   tooltip.style.padding = "10px";
   tooltip.style.zIndex = "9999";
   tooltip.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
-  tooltip.style.maxWidth = "300px";
+  tooltip.style.width = `${tooltipWidth}px`;
+  tooltip.style.maxHeight = `${tooltipHeight}px`;
   tooltip.style.fontFamily = "Arial, sans-serif";
+  tooltip.style.overflow = "auto";
   tooltip.style.borderRadius = "5px";
 
   tooltip.innerHTML = `
-      <p style="margin: 0; font-weight: bold; font-size: 14px;">Improved Text:</p>
-      <p style="word-wrap: break-word; margin: 10px 0; font-size: 14px;">${improvedText}</p>
-      <button id="copy-text" style="margin-right: 10px; padding: 5px 10px; border: none; background: #4CAF50; color: white; border-radius: 3px; cursor: pointer; font-size: 14px;">
-        Copy to Clipboard
-      </button>
-    `;
+          <p style="margin: 0; font-weight: bold; font-size: 13px;">Improved Text:</p>
+          <p style="word-wrap: break-word; margin: 10px 0; font-size: 13px; line-height: 1.4;">
+            ${improvedText}
+          </p>
+          <button id="copy-text" style="margin-right: 10px; padding: 5px 10px; font-size: 13px; border: none; background: #4CAF50; color: white; border-radius: 3px; cursor: pointer;">
+            Copy to Clipboard
+          </button>
+        `;
 
   document.body.appendChild(tooltip);
 
@@ -47,8 +74,6 @@ function showImprovedTextPopover(improvedText) {
   document.getElementById("copy-text").onclick = async () => {
     try {
       await navigator.clipboard.writeText(improvedText);
-
-      // Re-highlight the original text
       restoreSelection();
       document.body.removeChild(tooltip);
     } catch (err) {
@@ -56,7 +81,7 @@ function showImprovedTextPopover(improvedText) {
     }
   };
 
-  // Add a click listener to detect clicks outside the tooltip
+  // Close tooltip on outside click
   function outsideClickListener(event) {
     if (!tooltip.contains(event.target)) {
       document.body.removeChild(tooltip);
@@ -64,7 +89,6 @@ function showImprovedTextPopover(improvedText) {
       restoreSelection();
     }
   }
-
   document.addEventListener("click", outsideClickListener);
 }
 
