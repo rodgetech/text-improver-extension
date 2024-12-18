@@ -59,14 +59,14 @@ function showImprovedTextPopover(improvedText) {
   tooltip.style.borderRadius = "5px";
 
   tooltip.innerHTML = `
-    <p style="margin: 0; font-weight: bold; font-size: 13px; color: black;">
-      Improved Text:
-    </p>
-    <p style="word-wrap: break-word; margin: 10px 0; font-size: 13px; line-height: 1.4; color: black;">
-      ${improvedText}
-    </p>
+  <p style="margin: 0; font-weight: bold; font-size: 13px; color: black;">
+    Improved Text:
+  </p>
+  <p id="improved-text" style="word-wrap: break-word; margin: 10px 0; font-size: 13px; line-height: 1.4; color: black;">
+    ${improvedText}
+  </p>
+  <div style="display: flex; gap: 10px;">
     <button id="copy-text" style="
-      margin-right: 10px; 
       padding: 5px 10px; 
       font-size: 13px; 
       border: none; 
@@ -77,7 +77,19 @@ function showImprovedTextPopover(improvedText) {
     ">
       Copy to Clipboard
     </button>
-  `;
+    <button id="refresh-text" style="
+      padding: 5px 10px; 
+      font-size: 13px; 
+      border: none; 
+      background: #f7f7f7; 
+      color: black; 
+      border-radius: 3px; 
+      cursor: pointer;
+    ">
+      🔄 Refresh
+    </button>
+  </div>
+`;
 
   document.body.appendChild(tooltip);
 
@@ -89,6 +101,34 @@ function showImprovedTextPopover(improvedText) {
       document.body.removeChild(tooltip);
     } catch (err) {
       console.error("Failed to copy text:", err);
+    }
+  };
+
+  // Handle Refresh Button
+  document.getElementById("refresh-text").onclick = async () => {
+    try {
+      // Make the API call again
+      const response = await fetch(
+        "https://s4ofd6.buildship.run/improve-text",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: preservedRange.toString() }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data && data.improvedText) {
+        // Update the text content
+        document.getElementById("improved-text").textContent =
+          data.improvedText;
+        improvedText = data.improvedText; // Update the improvedText variable
+      } else {
+        console.error("API returned an invalid response.");
+      }
+    } catch (err) {
+      console.error("Failed to refresh text:", err);
     }
   };
 
