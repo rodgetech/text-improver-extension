@@ -59,14 +59,25 @@ function showImprovedTextPopover(improvedText) {
   tooltip.style.borderRadius = "5px";
 
   tooltip.innerHTML = `
-          <p style="margin: 0; font-weight: bold; font-size: 13px;">Improved Text:</p>
-          <p style="word-wrap: break-word; margin: 10px 0; font-size: 13px; line-height: 1.4;">
-            ${improvedText}
-          </p>
-          <button id="copy-text" style="margin-right: 10px; padding: 5px 10px; font-size: 13px; border: none; background: #4CAF50; color: white; border-radius: 3px; cursor: pointer;">
-            Copy to Clipboard
-          </button>
-        `;
+    <p style="margin: 0; font-weight: bold; font-size: 13px; color: black;">
+      Improved Text:
+    </p>
+    <p style="word-wrap: break-word; margin: 10px 0; font-size: 13px; line-height: 1.4; color: black;">
+      ${improvedText}
+    </p>
+    <button id="copy-text" style="
+      margin-right: 10px; 
+      padding: 5px 10px; 
+      font-size: 13px; 
+      border: none; 
+      background: #4CAF50; 
+      color: white; 
+      border-radius: 3px; 
+      cursor: pointer;
+    ">
+      Copy to Clipboard
+    </button>
+  `;
 
   document.body.appendChild(tooltip);
 
