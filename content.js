@@ -26,22 +26,40 @@ function showImprovedTextPopover(improvedText) {
   const tooltipHeight = 220; // Slightly taller
   const padding = 12;
 
-  // Default position: below the selection
-  let top = rect.bottom + padding;
-  let left = rect.left;
+  // Calculate available space in different directions
+  const viewportHeight = window.innerHeight;
+  const viewportWidth = window.innerWidth;
 
-  // Adjust vertically if offscreen
-  if (top + tooltipHeight > window.innerHeight) {
-    top = rect.top - tooltipHeight - padding;
+  // Get the selection coordinates
+  const selectionRect = range.getBoundingClientRect();
+  const selectionTop = selectionRect.top;
+  const selectionBottom = selectionRect.bottom;
+  const selectionCenter = selectionRect.left + selectionRect.width / 2;
+
+  // Calculate available space above and below selection
+  const spaceAbove = selectionTop;
+  const spaceBelow = viewportHeight - selectionBottom;
+
+  // Determine vertical position
+  let top;
+  if (spaceBelow >= tooltipHeight + padding) {
+    // Prefer below if there's enough space
+    top = selectionBottom + padding;
+  } else if (spaceAbove >= tooltipHeight + padding) {
+    // Try above if there's enough space
+    top = selectionTop - tooltipHeight - padding;
+  } else {
+    // Center in viewport if neither above nor below has enough space
+    top = Math.max(padding, (viewportHeight - tooltipHeight) / 2);
   }
 
-  // Adjust horizontally if offscreen
-  if (left + tooltipWidth > window.innerWidth) {
-    left = window.innerWidth - tooltipWidth - padding;
-  }
-  if (left < padding) {
-    left = padding;
-  }
+  // Determine horizontal position
+  let left = selectionCenter - tooltipWidth / 2;
+  // Ensure tooltip doesn't go off screen horizontally
+  left = Math.max(
+    padding,
+    Math.min(left, viewportWidth - tooltipWidth - padding)
+  );
 
   // Apply modern tooltip styles
   tooltip.style.position = "fixed";
@@ -173,6 +191,9 @@ function showImprovedTextPopover(improvedText) {
     }
   }
   document.addEventListener("click", outsideClickListener);
+
+  const availableHeight = viewportHeight - top - padding;
+  tooltip.style.maxHeight = `${Math.min(tooltipHeight, availableHeight)}px`;
 }
 
 // Function to restore the preserved selection
