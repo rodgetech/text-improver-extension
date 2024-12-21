@@ -22,9 +22,9 @@ function showImprovedTextPopover(improvedText) {
   const rect = range.getBoundingClientRect();
 
   // Tooltip dimensions
-  const tooltipWidth = 300; // Tooltip width
-  const tooltipHeight = 200; // Estimated height
-  const padding = 10;
+  const tooltipWidth = 320; // Slightly wider tooltip
+  const tooltipHeight = 220; // Slightly taller
+  const padding = 12;
 
   // Default position: below the selection
   let top = rect.bottom + padding;
@@ -32,7 +32,7 @@ function showImprovedTextPopover(improvedText) {
 
   // Adjust vertically if offscreen
   if (top + tooltipHeight > window.innerHeight) {
-    top = rect.top - tooltipHeight - padding; // Move above the selection
+    top = rect.top - tooltipHeight - padding;
   }
 
   // Adjust horizontally if offscreen
@@ -40,95 +40,127 @@ function showImprovedTextPopover(improvedText) {
     left = window.innerWidth - tooltipWidth - padding;
   }
   if (left < padding) {
-    left = padding; // Prevent overflowing left
+    left = padding;
   }
 
-  // Apply tooltip styles
+  // Apply modern tooltip styles
   tooltip.style.position = "fixed";
   tooltip.style.top = `${top}px`;
   tooltip.style.left = `${left}px`;
-  tooltip.style.backgroundColor = "white";
-  tooltip.style.border = "1px solid black";
-  tooltip.style.padding = "10px";
+  tooltip.style.backgroundColor = "#ffffff";
+  tooltip.style.border = "none";
+  tooltip.style.padding = "16px";
   tooltip.style.zIndex = "9999";
-  tooltip.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+  tooltip.style.boxShadow = "0 4px 20px rgba(0,0,0,0.12)";
   tooltip.style.width = `${tooltipWidth}px`;
   tooltip.style.maxHeight = `${tooltipHeight}px`;
-  tooltip.style.fontFamily = "Arial, sans-serif";
+  tooltip.style.fontFamily =
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
   tooltip.style.overflow = "auto";
-  tooltip.style.borderRadius = "5px";
+  tooltip.style.borderRadius = "12px";
+  tooltip.style.backdropFilter = "blur(8px)";
 
   tooltip.innerHTML = `
-  <p style="margin: 0; font-weight: bold; font-size: 13px; color: black;">
-    Improved Text:
+  <p style="margin: 0; font-weight: 600; font-size: 14px; color: #1a1a1a;">
+    Improved Text
   </p>
-  <p id="improved-text" style="word-wrap: break-word; margin: 10px 0; font-size: 13px; line-height: 1.4; color: black;">
+  <p id="improved-text" style="word-wrap: break-word; margin: 12px 0; font-size: 14px; line-height: 1.5; color: #333;">
     ${improvedText}
   </p>
-  <div style="display: flex; gap: 10px;">
+  <div style="display: flex; gap: 8px;">
     <button id="copy-text" style="
-      padding: 5px 10px; 
-      font-size: 13px; 
-      border: none; 
-      background: #4CAF50; 
-      color: white; 
-      border-radius: 3px; 
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      background: #2563eb;
+      color: white;
+      border-radius: 6px;
       cursor: pointer;
+      transition: background 0.2s ease;
+      flex: 1;
     ">
-      Copy to Clipboard
+      Copy
     </button>
     <button id="refresh-text" style="
-      padding: 5px 10px; 
-      font-size: 13px; 
-      border: none; 
-      background: #f7f7f7; 
-      color: black; 
-      border-radius: 3px; 
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      color: #374151;
+      border-radius: 6px;
       cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
     ">
-      🔄 Refresh
+      Refresh
     </button>
   </div>
 `;
 
   document.body.appendChild(tooltip);
 
+  // Add hover effects
+  const copyBtn = document.getElementById("copy-text");
+  const refreshBtn = document.getElementById("refresh-text");
+
+  copyBtn.onmouseover = () => {
+    copyBtn.style.background = "#1d4ed8";
+  };
+  copyBtn.onmouseout = () => {
+    copyBtn.style.background = "#2563eb";
+  };
+
+  refreshBtn.onmouseover = () => {
+    refreshBtn.style.background = "#f9fafb";
+  };
+  refreshBtn.onmouseout = () => {
+    refreshBtn.style.background = "#ffffff";
+  };
+
   // Handle Copy to Clipboard
-  document.getElementById("copy-text").onclick = async () => {
+  copyBtn.onclick = async () => {
     try {
       await navigator.clipboard.writeText(improvedText);
-      restoreSelection();
-      document.body.removeChild(tooltip);
+      copyBtn.textContent = "Copied!";
+      setTimeout(() => {
+        document.body.removeChild(tooltip);
+        restoreSelection();
+      }, 1000);
     } catch (err) {
       console.error("Failed to copy text:", err);
     }
   };
 
   // Handle Refresh Button
-  document.getElementById("refresh-text").onclick = async () => {
+  refreshBtn.onclick = async () => {
     try {
-      // Make the API call again
-      const response = await fetch(
-        "https://s4ofd6.buildship.run/improve-text",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: preservedRange.toString() }),
-        }
-      );
+      refreshBtn.style.pointerEvents = "none";
+      refreshBtn.textContent = "Refreshing...";
+
+      const response = await fetch(CONFIG.API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: preservedRange.toString() }),
+      });
 
       const data = await response.json();
 
       if (data && data.improvedText) {
-        // Update the text content
         document.getElementById("improved-text").textContent =
           data.improvedText;
-        improvedText = data.improvedText; // Update the improvedText variable
+        improvedText = data.improvedText;
       } else {
         console.error("API returned an invalid response.");
       }
+
+      refreshBtn.textContent = "Refresh";
+      refreshBtn.style.pointerEvents = "auto";
     } catch (err) {
       console.error("Failed to refresh text:", err);
+      refreshBtn.textContent = "Refresh";
+      refreshBtn.style.pointerEvents = "auto";
     }
   };
 
