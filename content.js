@@ -157,24 +157,24 @@ function showImprovedTextPopover(improvedText) {
       refreshBtn.style.pointerEvents = "none";
       refreshBtn.textContent = "Refreshing...";
 
-      const response = await fetch(CONFIG.API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: preservedRange.toString() }),
-      });
-
-      const data = await response.json();
-
-      if (data && data.improvedText) {
-        document.getElementById("improved-text").textContent =
-          data.improvedText;
-        improvedText = data.improvedText;
-      } else {
-        console.error("API returned an invalid response.");
-      }
-
-      refreshBtn.textContent = "Refresh";
-      refreshBtn.style.pointerEvents = "auto";
+      // Send message to background script to handle the API call
+      chrome.runtime.sendMessage(
+        {
+          action: "refreshText",
+          text: preservedRange.toString(),
+        },
+        (response) => {
+          if (response && response.improvedText) {
+            document.getElementById("improved-text").textContent =
+              response.improvedText;
+            improvedText = response.improvedText;
+          } else {
+            console.error("Failed to refresh text");
+          }
+          refreshBtn.textContent = "Refresh";
+          refreshBtn.style.pointerEvents = "auto";
+        }
+      );
     } catch (err) {
       console.error("Failed to refresh text:", err);
       refreshBtn.textContent = "Refresh";

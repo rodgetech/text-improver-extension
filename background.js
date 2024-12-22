@@ -32,3 +32,27 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     }
   }
 });
+
+// Add message listener for refresh requests
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "refreshText") {
+    fetch(CONFIG.API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: request.text }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data && data.improvedText) {
+          sendResponse({ improvedText: data.improvedText });
+        } else {
+          sendResponse({ error: "API returned an invalid response" });
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching improved text:", err);
+        sendResponse({ error: err.message });
+      });
+    return true; // Required to use sendResponse asynchronously
+  }
+});
